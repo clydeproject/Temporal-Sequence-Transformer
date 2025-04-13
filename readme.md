@@ -24,11 +24,11 @@ The Temporal Sequence Transformer introduces a non-autoregressive approach to ti
 - **Decoder Stack**: Processes input sequences with masked attention for forecasting/classification.
 - **Non-Autoregressive Output**: Predicts entire future sequences or class probabilities in one pass.
 
-TST architecture:
+## TST architecture:
 
-<img src="figures/tstarchitecture.png" alt="TST Architecture" width="400">
+<img src="figures/tstarchitecture.png" alt="TST Architecture" width="600">
 
-Non-AR Masked Multi-Head Attention:
+## Non-AR Masked Multi-Head Attention:
 
 ![TST Architecture](figures/nonarattn.png)
 
