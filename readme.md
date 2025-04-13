@@ -17,7 +17,7 @@ The TST is designed for applications like financial forecasting, traffic analysi
 
 The Temporal Sequence Transformer introduces a non-autoregressive approach to time-series tasks, avoiding iterative decoding for faster inference. Key components include:
 
-- **Projection Layer**: Maps timesteps of features to a higher-dimensional embedding space.
+- **Timestep Embeddings**: Maps timesteps of features to a higher-dimensional embedding space.
 - **Positional Encoding**: Sinusoidal or learnable encodings for temporal context.
 - **Non-AR Masked Multi-Head Attention**: Captures dependencies across time steps efficiently.
 - **Decoder Stack**: Processes input sequences with masked attention for forecasting/classification.
