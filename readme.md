@@ -33,7 +33,7 @@ The Temporal Sequence Transformer introduces a non-autoregressive approach to ti
 
 ## Citation
 
-If you use this code in your research, please cite our work:
+If you use our work in your research, please cite:
 
 ```bibtex
 @article{tst2025,
