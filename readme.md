@@ -1,1 +1,1 @@
-Temporal Sequence Transformer
+Temporal Sequence Transformer(TST): Non-Autoregressive Uni/Multivariate Time Series Forecasting

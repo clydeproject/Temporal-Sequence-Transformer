@@ -1,6 +1,16 @@
 import torch 
 import torch.nn as nn 
 
+class AvgPool1d(nn.Module):
+    def __init__(self,window_size,):
+        super(AvgPool1d,self).__init__()
+        self.window_size = window_size
+        self.pooler = nn.AvgPool1d(kernel_size=window_size,stride=1)
+
+    def forward(self,t):
+        t=t.unsqueeze(0).unsqueeze(0)
+        return self.pooler(t).squeeze()
+
 
 class Projection(nn.Module):
     def __init__(self,embed_dim,in_dim,activation=lambda x: x,dropout_p=0,norm=False):
@@ -8,7 +18,7 @@ class Projection(nn.Module):
         self.embed_dim = embed_dim
         self.in_dim = in_dim 
         self.__norm = norm 
-        self.activation = activation#f 
+        self.activation = activation
         self.dropout = nn.Dropout(p=dropout_p) 
         self.norm = nn.LayerNorm(self.embed_dim,) 
 
@@ -22,26 +32,13 @@ class Projection(nn.Module):
             x = self.norm(x)
         return x 
     
-    
-
-#naive implementation from:- https://arxiv.org/pdf/1706.03762 (Attention is all you need)
-#fixed seq_len position embedding(requires grad = False)
 class SinusoidalPositionalEncoding(nn.Module):
     def __init__(self,embed_dim,dropout_p=0,):
         super(SinusoidalPositionalEncoding,self).__init__()
         self.embed_dim = embed_dim
         self.dropout = nn.Dropout(dropout_p)
 
-    def forward(self, z, pos_t, mode="add"):
-        """
-        Args:
-        - z: (batch_size, seq_len, embedding_dim) -> input tensor
-        - pos_t: (batch_size, seq_len) or (batch_size, seq_len, 1) -> positional idx
-        - mode: "add" or "concat"
-            - "add" -> adds positional encoding to z
-            - "concat" -> concatenates positional encoding with z along last dim
-        """
-        
+    def forward(self, z, pos_t, mode="add"):    
         if pos_t.dim() == 0:
             pos_t = pos_t.unsqueeze(0)
         if pos_t.dim() == 2:
@@ -62,11 +59,40 @@ class SinusoidalPositionalEncoding(nn.Module):
         else:  # concat mode
             z = torch.cat([z, pos_enc.expand(batch_size, -1, -1)], dim=-1)  
         return self.dropout(z)
+    
+
+class LearnablePositionEncoding(nn.Module):
+    def __init__(self, seq_len, embed_dim, dropout_p=0):
+        """
+        Args:
+        - seq_len: sequence length of the input
+        - embed_dim: dimension of the embeddings
+        - dropout_p: dropout probability
+        """
+        super(LearnablePositionEncoding, self).__init__()
+        self.embed_dim = embed_dim
+        self.seq_len = seq_len
+        self.dropout = nn.Dropout(dropout_p)
+        
+        #learnable positional embeddings ( matrix of seq+pred len X embed_dim)
+        self.pos_embeddings = nn.Parameter(
+            torch.randn(1, seq_len, embed_dim)
+        )
+        
+    def forward(self, z, pos_t=None, mode="add"):
+        batch_size, seq_len, embed_dim = z.shape
+        assert seq_len == self.seq_len, f"Expected sequence length {self.seq_len}, got {seq_len}"
+        
+        pos_enc = self.pos_embeddings.expand(batch_size, -1, -1)
+        
+        if mode == "add":
+            z = z + pos_enc
+        else:  # concat mode
+            z = torch.cat([z, pos_enc], dim=-1)
+            
+        return self.dropout(z)
 
 
-
-#naive implementation from :- https://arxiv.org/pdf/1706.03762 (Attention is all you need)
-#pytorch's inbuilt implementation is prolly faster 
 class MultiHeadAttention(nn.Module):
     def __init__(self, embed_dim, num_heads=1, dropout=0.0):
         super(MultiHeadAttention, self).__init__()
@@ -75,7 +101,6 @@ class MultiHeadAttention(nn.Module):
         self.head_dim = embed_dim // num_heads
         assert self.head_dim * num_heads == embed_dim, "embed_dim must be divisible by num_heads"
 
-        #key, query and value matrices 
         self.qkv_proj = nn.Linear(embed_dim, 3 * embed_dim)
         self.output_proj = nn.Linear(embed_dim, embed_dim)
         self.dropout = nn.Dropout(dropout)
@@ -86,19 +111,15 @@ class MultiHeadAttention(nn.Module):
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         scaling = float(self.head_dim) ** -0.5
-        #attn = (QK^T)/sqrt(embed_dim) 
         attn = torch.matmul(q, k.transpose(-2, -1)) * scaling
-        #auto regressive mask can be applied. 
         if mask is not None:
-            attn = attn.masked_fill(mask == 0, float('-inf'))#try 0 if bug
+            attn = attn.masked_fill(mask == 0, float('-inf'))
         attn = torch.softmax(attn, dim=-1)
         attn = self.dropout(attn)
 
         out = torch.matmul(attn, v).transpose(1, 2).contiguous().view(batch_size, seq_len, embed_dim)
         return self.output_proj(out)
 
-
-#standard multilayered perceptron for up proj of attn(t) and down proj of attn(t)
 class FFN(nn.Module):
     def __init__(self,ffn_dim,embed_dim,dropout_p = 0,activation=torch.relu):
         super(FFN,self).__init__()
@@ -106,7 +127,6 @@ class FFN(nn.Module):
         self.ffn_dim = ffn_dim
         self.activation = activation
         self.dropout = nn.Dropout(dropout_p)
-        #try Projection instead?? 
         self.up_proj = nn.Linear(self.embed_dim,self.ffn_dim)
         self.down_proj = nn.Linear(self.ffn_dim,self.embed_dim)
         
@@ -116,31 +136,20 @@ class FFN(nn.Module):
         z = self.dropout(z)
         z = self.down_proj(z)
         return z
-
     
-#decoder block 
 class Decoder(nn.Module):
-    def __init__(self,embed_dim,num_heads,ffn_dim,seqlen,attn=MultiHeadAttention,non_linearity=torch.relu,dropout_p=0):
+    def __init__(self,embed_dim,num_heads,ffn_dim,attn=MultiHeadAttention,non_linearity=torch.relu,dropout_p=0,):
         super(Decoder,self).__init__()
         self.embed_dim = embed_dim
         self.num_heads = num_heads
         self.ffn_dim = ffn_dim
-        self.seq_len = seqlen
         self.non_linearity = non_linearity
-        
-        #auto regressive mask(mask out future time-steps)
-        self.register_buffer(
-            "attn_mask",
-            torch.tril(torch.ones(1, 1, self.seq_len, self.seq_len)) 
-        )
 
-        #attention module 
         self.multi_attn = attn(
             embed_dim=self.embed_dim,
             num_heads=self.num_heads,
             dropout=0,
         )
-        #multilayer perceptron 
         self.ffn = FFN(
             ffn_dim=self.ffn_dim,
             embed_dim=self.embed_dim,
@@ -148,27 +157,13 @@ class Decoder(nn.Module):
             activation=self.non_linearity,
         )
 
-        self.norm1 = nn.LayerNorm(self.embed_dim)#layer norm post attn 
-        self.norm2 = nn.LayerNorm(self.embed_dim)#layer norm post mlp  
+        self.norm1 = nn.LayerNorm(self.embed_dim)
+        self.norm2 = nn.LayerNorm(self.embed_dim)
         self.dropout = nn.Dropout(dropout_p)
 
-    def forward(self,x):
-        batch_size = x.shape[0]
-        attn_mask = self.attn_mask.expand(batch_size, -1, -1, -1)#(batch_size,num_heads,seq_len,seq_len)
-        attn_out = self.multi_attn(x=x,mask=attn_mask)
+    def forward(self,x,mask=None):
+        attn_out = self.multi_attn(x=x,mask=mask)
         x = self.norm1(x+self.dropout(attn_out))
         ffn_out = self.ffn(x)
         x = self.norm2(x+self.dropout(ffn_out))
         return x 
-    
-
-class Gate(nn.Module):
-    pass 
-
-
-class Expert(nn.Module):
-    pass 
-
-
-
-
