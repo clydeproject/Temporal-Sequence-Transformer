@@ -21,7 +21,7 @@ The Temporal Sequence Transformer introduces a non-autoregressive approach to ti
 - **Positional Encoding**: Sinusoidal or learnable encodings for temporal context.
 - **Non-AR Masked Multi-Head Attention**: Captures dependencies across time steps efficiently.
 - **Decoder Stack**: Processes input sequences with masked attention for forecasting/classification.
-- **Non-Autoregressive Output**: Predicts entire future sequences or class probabilities in one pass.
+- **Non-Autoregressive Output**: Predicts entire future sequences or class probabilities in one forward pass.
 
 ## TST Architecture:
 
