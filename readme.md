@@ -1,8 +1,8 @@
-Temporal Sequence Transformer(TST):
-# Temporal Sequence Transformer(TST)
+# Temporal Sequence Transformer (TST)
 
 **Non-Autoregressive Time-Series Forecasting and Classification**
 
+[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?logo=PyTorch&logoColor=white)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Introduction
@@ -13,7 +13,6 @@ The **Temporal Sequence Transformer (TST)** is a non-autoregressive transformer-
 - **Non_AR_TSCT**: For time-series classification (work in progress)
 
 The TST is designed for applications like financial forecasting, traffic analysis, and energy consumption prediction, offering flexibility for both univariate and multivariate datasets.
-
 
 ## Model Overview
 
@@ -27,11 +26,11 @@ The Temporal Sequence Transformer introduces a non-autoregressive approach to ti
 
 TST architecture:
 
-![TST Architecture](figures/tstarchitecture.png)
+<img src="figures/tstarchitecture.png" alt="TST Architecture" width="400">
 
-Non-AR Masked Multi-Head Attention
+Non-AR Masked Multi-Head Attention:
+
 ![TST Architecture](figures/nonarattn.png)
-
 
 ## Citation
 
