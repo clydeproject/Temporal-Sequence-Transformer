@@ -1,8 +1,7 @@
+[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?logo=PyTorch&logoColor=white)](https://pytorch.org/)
 # Temporal Sequence Transformer (TST)
 
 **Non-Autoregressive Time-Series Forecasting and Classification**
-
-[![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?logo=PyTorch&logoColor=white)](https://pytorch.org/)
 
 ## Introduction
 
