@@ -41,8 +41,6 @@ We benchmarked the `Non_AR_TST` model against the Informer model on long-term fo
 
 ![Benchmark Results](figures/results.png)
 
-*(Note: Ensure `results.png` is available in the `figures/` directory with actual benchmark metrics.)*
-
 ## Citation
 
 If you use our work in your research, please cite:
