@@ -1,5 +1,7 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?logo=PyTorch&logoColor=white)](https://pytorch.org/)
-# Temporal Sequence Transformer (TST)
+[![Python 3.9](https://img.shields.io/badge/Python-3.9-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![Transformers](https://img.shields.io/badge/Transformers-%23FF6F00.svg?logo=huggingface&logoColor=white)](https://huggingface.co/docs/transformers)
+[![Time-Series](https://img.shields.io/badge/Time--Series-Forecasting-blue.svg)](https://en.wikipedia.org/wiki/Time_series)# Temporal Sequence Transformer (TST)
 
 **Non-Autoregressive Time-Series Forecasting and Classification**
 
@@ -34,10 +36,11 @@ The Temporal Sequence Transformer introduces a non-autoregressive approach to ti
 
 We benchmarked the `Non_AR_TST` model against the Informer model on long-term forecasting tasks using the **ETTh1**, **ETTh2**, and **ETTm1** datasets. These datasets, part of the Electricity Transformer Temperature (ETT) collection, are designed for evaluating long-term forecasting by providing high-frequency multivariate time-series data from transformer sensors. ETTh1 and ETTh2 capture hourly measurements, while ETTm1 provides minute-level granularity, making them ideal for testing models on extended prediction horizons.
 
-
+### Table 1: Non_AR_TST vs. Informer Benchmarks
 
 ![Benchmark Results](figures/results.png)
 
+*(Note: Ensure `results.png` is available in the `figures/` directory with actual benchmark metrics.)*
 
 ## Citation
 
